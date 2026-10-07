@@ -1,0 +1,148 @@
+# Three retrieval agents for the TASK-0003 comparison (harness-engineering
+# lab). Same prompt, same model, one vector tool pair each; only the embedder
+# behind the store differs:
+#
+#   retrieval-eval-bge-m3     mcp/qdrant-mcp -> llama.cpp bge-m3   (chosen, ADR-0001)
+#   retrieval-eval-minilm-l6  official MCP, all-MiniLM-L6-v2       (English-only)
+#   retrieval-eval-minilm-ml  official MCP, paraphrase-multilingual-MiniLM-L12-v2
+#
+# They are deliberately narrower than retrieval-agent: no graph, no k8s-agent
+# delegate, no language switching. Anything the prompt allowed beyond one
+# vector search would let the LLM compensate for a weak embedder and the
+# comparison would measure the LLM, not the store. retrieval-agent itself is
+# untouched and still owns the agentic ingest path.
+---
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: retrieval-eval-bge-m3
+  namespace: kagent
+spec:
+  type: Declarative
+  description: Retrieval over manifests embedded with bge-m3 (llama.cpp) -- the chosen model.
+  declarative:
+    modelConfig: default-model-config
+    stream: true
+    systemMessage: |
+      You answer questions about this cluster's Kubernetes manifests from ONE
+      vector store, searched with vector_find. Nothing else: no cluster access, no
+      other agents, no writing.
+
+      How to search:
+      1. First call vector_find with the user's question verbatim, in the language
+         it was asked. Do not translate it and do not rewrite it before the
+         first call.
+      2. If the hits do not answer the question, you may make at most two more
+         vector_find calls with reformulations in the SAME language as the question.
+         Never switch language: the point of this agent is to measure how well
+         the store handles the question as asked.
+      3. Stop searching after three calls in total.
+
+      How to answer:
+      - Answer only from the chunks you retrieved. Name the object (kind, name,
+        namespace) and the file it came from, and quote the lines that support
+        the answer.
+      - If nothing retrieved answers the question, say "not found in the store"
+        and list the objects you did retrieve. Do not guess from general
+        Kubernetes knowledge.
+      - Never call vector_store while answering a question. Ingest happens only when
+        you are explicitly asked to ingest.
+    tools:
+    - type: McpServer
+      mcpServer:
+        apiGroup: kagent.dev
+        kind: MCPServer
+        name: qdrant-mcp
+        toolNames:
+        - vector_store
+        - vector_find
+---
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: retrieval-eval-minilm-l6
+  namespace: kagent
+spec:
+  type: Declarative
+  description: Retrieval over manifests embedded with all-MiniLM-L6-v2 (official qdrant MCP, English-only).
+  declarative:
+    modelConfig: default-model-config
+    stream: true
+    systemMessage: |
+      You answer questions about this cluster's Kubernetes manifests from ONE
+      vector store, searched with qdrant-find. Nothing else: no cluster access, no
+      other agents, no writing.
+
+      How to search:
+      1. First call qdrant-find with the user's question verbatim, in the language
+         it was asked. Do not translate it and do not rewrite it before the
+         first call.
+      2. If the hits do not answer the question, you may make at most two more
+         qdrant-find calls with reformulations in the SAME language as the question.
+         Never switch language: the point of this agent is to measure how well
+         the store handles the question as asked.
+      3. Stop searching after three calls in total.
+
+      How to answer:
+      - Answer only from the chunks you retrieved. Name the object (kind, name,
+        namespace) and the file it came from, and quote the lines that support
+        the answer.
+      - If nothing retrieved answers the question, say "not found in the store"
+        and list the objects you did retrieve. Do not guess from general
+        Kubernetes knowledge.
+      - Never call qdrant-store while answering a question. Ingest happens only when
+        you are explicitly asked to ingest.
+    tools:
+    - type: McpServer
+      mcpServer:
+        apiGroup: kagent.dev
+        kind: MCPServer
+        name: qdrant-official-minilm-l6
+        toolNames:
+        - qdrant-store
+        - qdrant-find
+---
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: retrieval-eval-minilm-ml
+  namespace: kagent
+spec:
+  type: Declarative
+  description: Retrieval over manifests embedded with paraphrase-multilingual-MiniLM-L12-v2 (official qdrant MCP).
+  declarative:
+    modelConfig: default-model-config
+    stream: true
+    systemMessage: |
+      You answer questions about this cluster's Kubernetes manifests from ONE
+      vector store, searched with qdrant-find. Nothing else: no cluster access, no
+      other agents, no writing.
+
+      How to search:
+      1. First call qdrant-find with the user's question verbatim, in the language
+         it was asked. Do not translate it and do not rewrite it before the
+         first call.
+      2. If the hits do not answer the question, you may make at most two more
+         qdrant-find calls with reformulations in the SAME language as the question.
+         Never switch language: the point of this agent is to measure how well
+         the store handles the question as asked.
+      3. Stop searching after three calls in total.
+
+      How to answer:
+      - Answer only from the chunks you retrieved. Name the object (kind, name,
+        namespace) and the file it came from, and quote the lines that support
+        the answer.
+      - If nothing retrieved answers the question, say "not found in the store"
+        and list the objects you did retrieve. Do not guess from general
+        Kubernetes knowledge.
+      - Never call qdrant-store while answering a question. Ingest happens only when
+        you are explicitly asked to ingest.
+    tools:
+    - type: McpServer
+      mcpServer:
+        apiGroup: kagent.dev
+        kind: MCPServer
+        name: qdrant-official-minilm-ml
+        toolNames:
+        - qdrant-store
+        - qdrant-find

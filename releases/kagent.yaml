@@ -87,7 +87,20 @@ spec:
     providers:
       default: openAI
       openAI:
-        apiKey: OPENAI_API_KEY
+        # Empty on purpose. With a value here the chart creates the
+        # kagent-openai Secret itself -- and the previous value was the literal
+        # string "OPENAI_API_KEY", so every agent sat on an invalid key. Left
+        # empty, the chart only references the Secret and it is created out of
+        # band from the Codespaces secret of the same name:
+        #
+        #   kubectl -n kagent create secret generic kagent-openai \
+        #     --from-literal=OPENAI_API_KEY="$OPENAI_API_KEY"
+        #
+        # The lab project key has no access to the chart default gpt-4.1-mini
+        # (403 model_not_found); gpt-5.4-mini is the cheapest model the key
+        # can see that supports tool calling.
+        apiKey: ""
+        model: "gpt-5.4-mini"
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
