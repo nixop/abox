@@ -67,11 +67,10 @@ spec:
       # are two spaces and the vectors do not transfer. Repointing
       # EMBEDDINGS_BASE_URL is therefore a re-embed, not a copy.
       QDRANT_URL: http://qdrant.qdrant:6333
-      # TASK-0003 (harness-engineering): the standalone llama.cpp route now
-      # serves bge-m3, 1024 dims, so this is a new collection -- the nomic one
-      # (abox-nomic, 768 dims) cannot hold these vectors. Same chunk list as
-      # the two MiniLM collections below; the three are compared side by side.
-      QDRANT_COLLECTION: manifests-bge-m3
+      # TASK-0004 (harness-engineering lab 5): the Ledger agent-memory corpus.
+      # bge-m3, 1024 dims. One collection per corpus; lab 4's manifests
+      # collection lives on feat/llmd-embeddings-lab4.
+      QDRANT_COLLECTION: ledger-bge-m3
       # bge-m3 is symmetric: no instruction prefix on either side. The server
       # reads these with LookupEnv, so an empty value is honoured and turns the
       # nomic defaults ("search_document: " / "search_query: ") off.
