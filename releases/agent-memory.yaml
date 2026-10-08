@@ -76,10 +76,26 @@ spec:
         was raised. Never invent an owner.
 
       How to search:
-      - Call get-schema once, then read-cypher. Use MATCH on Decision, Topic,
-        Person, Meeting, Document, OpenItem and the edges ABOUT, DECIDED_IN,
-        OWNS, SUPERSEDES, RAISED_IN, AUTHORED, ATTENDED. For "current" filter
-        decisions with no incoming SUPERSEDES. Up to four queries.
+      - Call get-schema once, then read-cypher, up to four queries. Labels:
+        Decision, Topic, Person, Meeting, Document, OpenItem; edges ABOUT,
+        DECIDED_IN, OWNS {from, to}, SUPERSEDES, RAISED_IN, AUTHORED, ATTENDED.
+        Every node has a `key`; dates are ISO strings (compare them as strings).
+      - Topics are fixed; pick from this list, never search the topic name
+        by substring: topic:gateway-timeout, topic:retries (retries, retry
+        budget, retry policy), topic:idempotency, topic:tariffs (schema v2,
+        legacy_code, dry run, migration), topic:cutover (date, rollback),
+        topic:slo (latency SLO, error budget), topic:ownership.
+      - People: match by key, person:<first>-<last> in lower case, e.g.
+        person:dasha-volkova, person:oleg-prikhodko, person:marat-yusupov,
+        person:irina-belova, person:tim-horvat. A first name or a Russian name
+        in the question (Даша, Олег, Марат, Ира, Тим) maps to those keys.
+      - "Current decision on X": MATCH (d:Decision)-[:ABOUT]->(:Topic {key:..})
+        WHERE NOT (d)<-[:SUPERSEDES]-() ; history: all decisions on the topic
+        ORDER BY d.date. "Who owns X now": (p:Person)-[o:OWNS]->(:Topic {key:..})
+        WHERE o.to IS NULL. "No owner": an OpenItem on the topic with no OWNS.
+      - Documents hold title, file, updated; their text is not in the graph.
+        Facts that are not decisions (a cache TTL, a port) are not in the
+        graph either: say "not in memory" for those.
       Answer in the language of the question. For every claim give the source
       file and the date. If the stores do not contain the answer, say "not in
       memory" and list what you did retrieve.
@@ -127,6 +143,14 @@ spec:
         start with read-cypher after get-schema. Mixed questions: vector_find
         first, then read-cypher on the identifiers in the hits. Up to five tool
         calls in total.
+      - Graph conventions: every node has a `key`; dates are ISO strings.
+        Topics are fixed, never searched by substring: topic:gateway-timeout,
+        topic:retries, topic:idempotency, topic:tariffs, topic:cutover,
+        topic:slo, topic:ownership. People by key person:<first>-<last> in
+        lower case (person:dasha-volkova, person:oleg-prikhodko,
+        person:marat-yusupov, person:irina-belova, person:tim-horvat); Russian
+        first names map to those keys. Current decision: no incoming
+        SUPERSEDES. Current owner: OWNS edge with o.to IS NULL.
       Answer in the language of the question. For every claim give the source
       file and the date. If the stores do not contain the answer, say "not in
       memory" and list what you did retrieve.
@@ -173,8 +197,9 @@ spec:
            (даша, олег, марат, ира, тим) to Dasha Volkova, Oleg Prikhodko,
            Marat Yusupov, Irina Belova, Tim Horvat.
          - Meeting key "meeting:<date>"; Document key "document:<file>".
-         - Decision key "decision:<topic-slug>:<date>" with text, date (date()),
-           status "active", source; edges (d)-[:ABOUT]->(Topic), (d)-[:DECIDED_IN]->(Meeting),
+         - Decision key "decision:<topic-slug>:<date>" with text, date as an
+           ISO string "YYYY-MM-DD" (never the date() function), status
+           "active", source; edges (d)-[:ABOUT]->(Topic), (d)-[:DECIDED_IN]->(Meeting),
            (Person)-[:OWNS {from: date}]->(d).
          - If the source says a decision replaces an earlier one on the same
            topic, MATCH the earlier Decision and MERGE (new)-[:SUPERSEDES]->(old)
@@ -189,6 +214,9 @@ spec:
         Yusupov, ира/ирина -> Irina Belova, тим -> Tim Horvat. A speaker you
         cannot map gets a Person node with unresolved: true and the original
         string as name; never invent a canonical key.
+      - Person keys are "person:<first>-<last>" in lower case with a hyphen:
+        person:dasha-volkova, person:oleg-prikhodko, person:marat-yusupov,
+        person:irina-belova, person:tim-horvat. Exactly this form, nothing else.
       - Topics, canonical slug in brackets: таймаут / таймаут на гейтвее /
         upstream timeout [gateway-timeout]; ретраи / повторы / политика ретраев
         [retries]; бюджет ретраев / бюджет повторов / retry budget [retries];
