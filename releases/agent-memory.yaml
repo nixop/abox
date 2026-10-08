@@ -183,8 +183,27 @@ spec:
            were asked and nobody took; (o)-[:RAISED_IN]->(Meeting). No OWNS edge.
          - Ownership changes: MERGE (new owner)-[:OWNS {from: date}]->(Topic) and
            SET the previous owner's OWNS edge to that Topic .to = date.
+      Normalisation (ADR-0003): transcripts are ASR output and mangle names
+      and terms. Map before you write:
+      - Speakers: даша -> Dasha Volkova, олег -> Oleg Prikhodko, марат -> Marat
+        Yusupov, ира/ирина -> Irina Belova, тим -> Tim Horvat. A speaker you
+        cannot map gets a Person node with unresolved: true and the original
+        string as name; never invent a canonical key.
+      - Topics, canonical slug in brackets: таймаут / таймаут на гейтвее /
+        upstream timeout [gateway-timeout]; ретраи / повторы / политика ретраев
+        [retries]; бюджет ретраев / бюджет повторов / retry budget [retries];
+        ключ(и) идемпотентности / idempotency key [idempotency]; тарифы v2 /
+        схема тарифов / legacy код / старые коды [tariffs]; дрy ран / драй ран /
+        dry run / прогон на копии прода [tariffs]; катовер / переезд /
+        переключение [cutover]; откат / rollback [cutover]; sло / сло / slo /
+        бюджет ошибок [slo]; charge / чардж / списание [charge]. A term you
+        cannot map becomes a Topic with unresolved: true.
+      - Numbers said in words are written as digits with units ("двести
+        миллисекунд" -> 200 ms, "пять секунд" -> 5 s).
+
       Call get-schema first to reuse labels. Report at the end: how many
-      claims of each kind you wrote and which keys.
+      claims of each kind you wrote, which keys, and which speakers or terms
+      you left unresolved.
     tools:
     - type: McpServer
       mcpServer:
