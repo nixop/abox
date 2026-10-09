@@ -4,8 +4,8 @@ Browser microphone → this Node backend → Gemini Live → kagent A2A. Gemini 
 
 ## Run in the abox Codespace
 
-1. Add `GEMINI_API_KEY` as a Codespaces secret for `nixop/abox` (GitHub → Settings → Codespaces → secrets). A secret added after the Codespace was created is only visible after a full stop and start of the Codespace.
-2. `cd apps/voice-agent && npm install && npm start` (Node 22.6+ runs the `.ts` files directly). Env: `KAGENT_URL` (default `http://172.18.0.5`, the agentgateway LoadBalancer IP inside the Codespace), `GEMINI_LIVE_MODEL` (default `gemini-3.8-live`), `AGENTS` (optional comma list to restrict delegation), `PORT` (8787).
+1. Add `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) as a Codespaces secret for `nixop/abox` (GitHub → Settings → Codespaces → secrets). A secret added after the Codespace was created is only visible after a full stop and start of the Codespace.
+2. `cd apps/voice-agent && npm install && npm start` (Node 22.6+ runs the `.ts` files directly). Env: `KAGENT_URL` (default `http://172.18.0.5`, the agentgateway LoadBalancer IP inside the Codespace), `GEMINI_LIVE_MODEL` (default `gemini-2.5-flash-native-audio-preview-12-2025`), `AGENTS` (optional comma list to restrict delegation), `PORT` (8787).
 3. Open the forwarded port in the browser. Codespaces forwards it over HTTPS (`https://<codespace>-8787.app.github.dev`), which is what the microphone API needs; set the port to Public or stay signed in to GitHub.
 4. Connect, hold the button and talk, or type a question in the box. The log shows both transcripts and every tool call with its result.
 

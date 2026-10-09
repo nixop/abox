@@ -39,3 +39,14 @@ Avatar (PIN `admin:482913`): ask the same project question → `vector_find` / `
 - The avatar's instructions name the lab's tools (`vector_find`, `vector_store`, `read-cypher`) instead of xray's `remember` / `recall` / `forget`.
 
 Our own lighter implementations of the same two parts live in `apps/voice-agent` and `apps/avatar` (TypeScript; the avatar one works with Runway preset avatars and needs no custom avatar).
+
+## Own apps instead of the reference binaries
+
+`apps/voice-agent` (Node, Gemini Live, tools `list_agents` / `ask_agent`) replaces the
+author's `voice-agent` binary on the same port: stop the binary, then
+`cd apps/voice-agent && PORT=8081 GOOGLE_API_KEY=… node server.ts` (the model defaults to
+`gemini-2.5-flash-native-audio-preview-12-2025`, the key is read from `GEMINI_API_KEY` or
+`GOOGLE_API_KEY`). The system prompt carries the same rules as `voice-agent.instruction.md`,
+including the topic-history rule for "previous decisions" questions. The browser page is
+push-to-talk (hold the button) or typed text. `apps/avatar` was our own from the start; the
+author's avatar server (`run-avatar.sh`) was not used in the demo.
