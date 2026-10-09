@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice agent for kagent</title>
+<style>
+  :root { --bg: #f6f7f9; --fg: #1b1f24; --muted: #6b7280; --card: #fff; --accent: #2563eb; --ok: #16a34a; --err: #dc2626; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0f1115; --fg: #e5e7eb; --muted: #9ca3af; --card: #171a21; --accent: #60a5fa; } }
+  body { margin: 0; padding: 16px; font: 15px/1.45 system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+  main { max-width: 820px; margin: 0 auto; display: grid; gap: 12px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--muted); background: var(--card); color: var(--fg); cursor: pointer; }
+  button.primary { background: var(--accent); color: #fff; border-color: transparent; }
+  button.live { background: var(--err); color: #fff; border-color: transparent; }
+  input[type=text] { flex: 1; min-width: 200px; font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--muted); background: var(--card); color: var(--fg); }
+  #log { background: var(--card); border-radius: 10px; padding: 12px; min-height: 240px; max-height: 60vh; overflow: auto; }
+  .m { margin: 4px 0; } .you { color: var(--accent); } .agent { color: var(--fg); } .tool { color: var(--muted); font-size: 13px; white-space: pre-wrap; } .status { color: var(--muted); font-size: 13px; } .err { color: var(--err); }
+  #agents { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h2>Voice agent → kagent (A2A)</h2>
+  <div class="row">
+    <button id="connect" class="primary">Connect</button>
+    <button id="mic" disabled>Hold to talk</button>
+    <span id="state" class="status">disconnected</span>
+  </div>
+  <div class="row">
+    <input id="text" type="text" placeholder="…or type a question (e.g. what did we decide about the gateway timeout)" disabled>
+    <button id="send" disabled>Send</button>
+  </div>
+  <div id="log"></div>
+  <div id="agents"></div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

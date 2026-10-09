@@ -67,7 +67,7 @@ spec:
       # are two spaces and the vectors do not transfer. Repointing
       # EMBEDDINGS_BASE_URL is therefore a re-embed, not a copy.
       QDRANT_URL: http://qdrant.qdrant:6333
-      # Lab 6 (harness-engineering TASK-0005): the Relay agent-memory corpus.
+      # Lab 5, part 2 (harness-engineering TASK-0005): the Relay agent-memory corpus.
       # bge-m3, 1024 dims. One collection per corpus; lab 5's ledger-bge-m3
       # lives on feat/llmd-embeddings-lab5.
       QDRANT_COLLECTION: relay-bge-m3

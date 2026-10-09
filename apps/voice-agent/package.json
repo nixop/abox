@@ -1,0 +1,15 @@
+{
+  "name": "voice-agent",
+  "private": true,
+  "type": "module",
+  "description": "Voice front for kagent agents: browser mic -> Gemini Live (tools) -> kagent A2A",
+  "scripts": {
+    "start": "node server.ts",
+    "check": "node --check server.ts && node --check kagent.ts"
+  },
+  "engines": { "node": ">=22.6" },
+  "dependencies": {
+    "@google/genai": "^2.28.0",
+    "ws": "^8.18.0"
+  }
+}
