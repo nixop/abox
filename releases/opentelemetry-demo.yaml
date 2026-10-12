@@ -74,6 +74,28 @@ spec:
     createNamespace: true
   values:
     components:
+      # TASK-0007: the demo's LLM agent ships with recorded VCR cassettes and
+      # a dead LLM_BASE_URL, so every unrecorded prompt fails ("Error code:
+      # 301") and the trace shows gen_ai.task.status=failure. Pointed at the
+      # real OpenAI API with the lab key so the Astronomy Shop agent produces
+      # genuine LLM and tool spans. The model name is in litellm form. The
+      # Secret is out of band, same convention as the rest of this repo:
+      #
+      #   kubectl -n otel-demo create secret generic otel-demo-openai \
+      #     --from-literal=OPENAI_API_KEY="$OPENAI_API_KEY"
+      agent:
+        envOverrides:
+          - name: LLM_BASE_URL
+            value: https://api.openai.com/v1
+          - name: LLM_MODEL
+            value: openai/gpt-5.4-mini
+          - name: USE_VCR
+            value: "False"
+          - name: API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: otel-demo-openai
+                key: OPENAI_API_KEY
       load-generator:
         envOverrides:
           - name: LOCUST_HEADLESS
