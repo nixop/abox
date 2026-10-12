@@ -83,22 +83,18 @@ spec:
         # No match_once/default_pipelines -- see the file header comment for
         # why there's deliberately no catch-all bucket here.
         routing:
-          # Agent pods name their resource after the Agent with underscores
-          # (memory_eval_both, k8s_agent...), not with a kagent prefix, so
-          # the explicit rule below only catches the controller. Everything
-          # that is not the demo is kagent in this cluster: default_pipelines
-          # is the agent-pod rule. (The author's file deliberately had no
-          # catch-all; with the triage stack gone there is no third source.)
-          default_pipelines: [traces/kagent]
+          # kagent is identified positively: the controller exports as
+          # kagent-controller, agent pods as the Agent name with underscores
+          # (memory_eval_both, k8s_agent...). Everything else is the demo,
+          # whose spans do not all carry k8s.namespace.name (the demo
+          # collector's k8s_attributes preset misses some, e.g. currency), so
+          # the demo is the default rather than a namespace match. (The
+          # author's file had no catch-all; with the triage stack gone there
+          # is no third source here.)
+          default_pipelines: [traces/otel-demo]
           table:
-            # o11y lab: kagent replaces triage-core as the agent source. The
-            # kagent controller and the agent pods export with their own
-            # service.name values, all starting with "kagent", and nothing
-            # enriches them with k8s attributes on the way here.
-            - statement: route() where IsMatch(resource.attributes["service.name"], "^kagent")
+            - statement: route() where IsMatch(resource.attributes["service.name"], "^(kagent.*|[a-z0-9]+(_[a-z0-9]+)+)$")
               pipelines: [traces/kagent]
-            - statement: route() where resource.attributes["k8s.namespace.name"] == "otel-demo"
-              pipelines: [traces/otel-demo]
       exporters:
         # otlp_http, not otlphttp -- the chart's rewriteDeprecatedComponentNames
         # (on by default) silently renames the old identifier at render time;
