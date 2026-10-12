@@ -88,6 +88,10 @@ spec:
       default: openAI
       openAI:
         apiKey: OPENAI_API_KEY
+        # The chart's default gpt-4.1-mini is not enabled on this OpenAI
+        # project (403 "does not have access to model"); the same model
+        # the lab-5 memory agents ran on.
+        model: gpt-5.4-mini
     # --- o11y lab: kagent inside the observability stack -------------------
     # Every agent run, LLM call and tool call becomes a span. The OTLP/gRPC
     # exporter points at the bridge collector in releases/mlflow-otel-
@@ -99,7 +103,7 @@ spec:
         enabled: true
         exporter:
           otlp:
-            endpoint: otel-collector.mlflow.svc.cluster.local:4317
+            endpoint: http://otel-collector.mlflow.svc.cluster.local:4317
             protocol: grpc
             insecure: true
     # The built-in promql-agent and observability-agent reach Prometheus and
