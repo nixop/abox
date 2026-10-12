@@ -136,6 +136,17 @@ spec:
           headers:
             authorization: "Bearer ${env:PHOENIX_API_KEY}"
       processors:
+        # The kagent controller traces its own REST surface: every
+        # GET/POST /api/tasks and /api/sessions call from an agent pod is a
+        # span, and the ones outside an A2A request become one-span traces.
+        # 183 of the first 200 traces in the kagent experiment were such
+        # 5 ms HTTP traces. Dropped here; the A2A root span and the agent
+        # pod's invoke_agent / generate_content / execute_tool spans stay.
+        filter/kagent-rest-noise:
+          error_mode: ignore
+          traces:
+            span:
+              - 'resource.attributes["service.name"] == "kagent-controller" and IsMatch(name, "^(GET|POST|PUT|PATCH|DELETE) /api/(tasks|sessions)")'
         # Phoenix files spans by project; without this attribute everything
         # lands in "default".
         resource/phoenix-project:
@@ -164,6 +175,7 @@ spec:
             receivers:
               - routing
             processors:
+              - filter/kagent-rest-noise
               - resource/phoenix-project
             exporters:
               - otlp_http/mlflow-kagent
