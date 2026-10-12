@@ -193,6 +193,8 @@ spec:
               - resource/phoenix-project-demo
             exporters:
               - otlp_http/mlflow-otel-demo
-              # TASK-0007: the demo (incl. its LLM agent) in Phoenix too, so
-              # all three backends hold the same Astronomy Shop agent trace.
-              - otlp/phoenix
+              # TASK-0007 sent the demo to Phoenix too (otlp/phoenix here)
+              # so all three backends held the Astronomy Shop agent trace;
+              # removed again after the comparison: Phoenix ingesting the
+              # store's ~100 spans/s cost a CPU the 4-core node did not have.
+              # Add the exporter back for another three-way run.

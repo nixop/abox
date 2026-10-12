@@ -101,6 +101,11 @@ spec:
         envOverrides:
           - name: LOCUST_HEADLESS
             value: "false"
+          # Browser-based traffic runs headless Chromium inside the pod: on
+          # the 4-core Codespace that was ~40% of a node's CPU for nothing
+          # the lab looks at. HTTP traffic only.
+          - name: LOCUST_BROWSER_TRAFFIC_ENABLED
+            value: "false"
         service:
           port: 8089
     # Bundled jaeger/prometheus/grafana/opensearch backends disabled --
@@ -118,6 +123,15 @@ spec:
       enabled: true
     prometheus:
       enabled: true
+      server:
+        # The umbrella chart caps the server at 400Mi; with ~25 services
+        # plus span metrics it was OOMKilled every few minutes, taking the
+        # Grafana datasource (HTTP 500) down with it.
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            memory: 512Mi
     grafana:
       enabled: true
     opensearch:
