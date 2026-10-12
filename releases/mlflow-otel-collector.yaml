@@ -72,11 +72,24 @@ spec:
         enabled: false
       zipkin:
         enabled: false
+    extraEnvs:
+      - name: PHOENIX_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: phoenix-otlp-key
+            key: token
     config:
       connectors:
         # No match_once/default_pipelines -- see the file header comment for
         # why there's deliberately no catch-all bucket here.
         routing:
+          # Agent pods name their resource after the Agent with underscores
+          # (memory_eval_both, k8s_agent...), not with a kagent prefix, so
+          # the explicit rule below only catches the controller. Everything
+          # that is not the demo is kagent in this cluster: default_pipelines
+          # is the agent-pod rule. (The author's file deliberately had no
+          # catch-all; with the triage stack gone there is no third source.)
+          default_pipelines: [traces/kagent]
           table:
             # o11y lab: kagent replaces triage-core as the agent source. The
             # kagent controller and the agent pods export with their own
@@ -118,6 +131,14 @@ spec:
           endpoint: phoenix-svc.phoenix.svc.cluster.local:4317
           tls:
             insecure: true
+          # Phoenix runs with auth on (the chart generates phoenix-secret);
+          # OTLP needs a system API key, created once through the GraphQL
+          # mutation createSystemApiKey as the admin and stored out of band:
+          #
+          #   kubectl -n mlflow create secret generic phoenix-otlp-key \
+          #     --from-literal=token=<jwt>
+          headers:
+            authorization: "Bearer ${env:PHOENIX_API_KEY}"
       processors:
         # Phoenix files spans by project; without this attribute everything
         # lands in "default".

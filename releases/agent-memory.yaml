@@ -12,6 +12,16 @@ spec:
   type: Declarative
   description: Answers Relay project questions from the vector memory layer only.
   declarative:
+    # TASK-0007: the controller only passes OTEL_EXPORTER_OTLP_TRACES_*
+    # to agent pods and the Go ADK runtime reads the generic endpoint
+    # variable, so without this the agent pod's LLM and tool spans are
+    # never exported (only the controller's invoke_agent span is).
+    deployment:
+      env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://otel-collector.mlflow.svc.cluster.local:4317
+        - name: OTEL_SERVICE_NAME
+          value: kagent-memory-eval-vector
     modelConfig: default-model-config
     stream: true
     systemMessage: |
@@ -56,6 +66,16 @@ spec:
   type: Declarative
   description: Answers Relay project questions from the graph memory layer only.
   declarative:
+    # TASK-0007: the controller only passes OTEL_EXPORTER_OTLP_TRACES_*
+    # to agent pods and the Go ADK runtime reads the generic endpoint
+    # variable, so without this the agent pod's LLM and tool spans are
+    # never exported (only the controller's invoke_agent span is).
+    deployment:
+      env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://otel-collector.mlflow.svc.cluster.local:4317
+        - name: OTEL_SERVICE_NAME
+          value: kagent-memory-eval-graph
     modelConfig: default-model-config
     stream: true
     systemMessage: |
@@ -265,6 +285,16 @@ spec:
   type: Declarative
   description: Answers Relay project questions from both memory layers.
   declarative:
+    # TASK-0007: the controller only passes OTEL_EXPORTER_OTLP_TRACES_*
+    # to agent pods and the Go ADK runtime reads the generic endpoint
+    # variable, so without this the agent pod's LLM and tool spans are
+    # never exported (only the controller's invoke_agent span is).
+    deployment:
+      env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://otel-collector.mlflow.svc.cluster.local:4317
+        - name: OTEL_SERVICE_NAME
+          value: kagent-memory-eval-both
     modelConfig: default-model-config
     stream: true
     systemMessage: |
@@ -503,6 +533,16 @@ spec:
   type: Declarative
   description: Reads a Ledger meeting transcript or document and writes claims into memory (vector + graph) following ADR-0003.
   declarative:
+    # TASK-0007: the controller only passes OTEL_EXPORTER_OTLP_TRACES_*
+    # to agent pods and the Go ADK runtime reads the generic endpoint
+    # variable, so without this the agent pod's LLM and tool spans are
+    # never exported (only the controller's invoke_agent span is).
+    deployment:
+      env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://otel-collector.mlflow.svc.cluster.local:4317
+        - name: OTEL_SERVICE_NAME
+          value: kagent-memory-writer
     modelConfig: default-model-config
     stream: true
     systemMessage: |
@@ -589,6 +629,16 @@ spec:
   type: Declarative
   description: Reads one Relay source (meeting transcript, document, Confluence page or ADR) and returns the claims it contains as JSON for validation; it has no tools and writes nothing.
   declarative:
+    # TASK-0007: the controller only passes OTEL_EXPORTER_OTLP_TRACES_*
+    # to agent pods and the Go ADK runtime reads the generic endpoint
+    # variable, so without this the agent pod's LLM and tool spans are
+    # never exported (only the controller's invoke_agent span is).
+    deployment:
+      env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://otel-collector.mlflow.svc.cluster.local:4317
+        - name: OTEL_SERVICE_NAME
+          value: kagent-memory-extractor
     modelConfig: default-model-config
     stream: true
     systemMessage: |
