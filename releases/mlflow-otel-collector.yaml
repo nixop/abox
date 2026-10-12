@@ -154,6 +154,11 @@ spec:
             - key: openinference.project.name
               value: kagent
               action: upsert
+        resource/phoenix-project-demo:
+          attributes:
+            - key: openinference.project.name
+              value: otel-demo
+              action: upsert
       # jaeger/zipkin removed outright, not just dropped from the traces
       # pipeline below -- the collector refuses to start with a receiver
       # defined but not referenced by any pipeline.
@@ -184,5 +189,10 @@ spec:
           traces/otel-demo:
             receivers:
               - routing
+            processors:
+              - resource/phoenix-project-demo
             exporters:
               - otlp_http/mlflow-otel-demo
+              # TASK-0007: the demo (incl. its LLM agent) in Phoenix too, so
+              # all three backends hold the same Astronomy Shop agent trace.
+              - otlp/phoenix
