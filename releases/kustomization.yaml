@@ -5,15 +5,18 @@ kind: Kustomization
 # ngrok account), triage-core/triage-agent/graph-otel-demo/pages-triage
 # (private ghcr packages of the course author, 403 for this fork's token) and
 # xray-memory (needs the author's age snapshot key). Nothing here depends on
-# them; the files stay in the tree for reference.
+# them; the files stay in the tree for reference. llm-d is dropped too: it
+# served the same nomic model as llama-cpp-embeddings for an embeddings
+# comparison (TASK-0002) and costs ~1.5Gi the 16Gi Codespace needs for the
+# OTel demo; this lab's embedder is the lab-5 bge-m3 llama.cpp server.
 resources:
   - agentgateway.yaml
   - agentgateway-llm.yaml
   - agentregistry.yaml
   - agent-retrieval.yaml
+  - agent-memory.yaml
   - kagent.yaml
   - llama-cpp-embeddings.yaml
-  - llmd.yaml
   - mcp-servers.yaml
   - mlflow.yaml
   - mlflow-otel-collector.yaml

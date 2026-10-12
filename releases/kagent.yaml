@@ -87,10 +87,19 @@ spec:
     providers:
       default: openAI
       openAI:
-        apiKey: OPENAI_API_KEY
+        # Empty on purpose (lab 5 convention): with a value the chart creates
+        # the kagent-openai Secret itself with that literal string as the key,
+        # and re-creates it on every upgrade. Left empty, the chart only
+        # references the Secret, created out of band from the Codespaces
+        # secret of the same name:
+        #
+        #   kubectl -n kagent create secret generic kagent-openai \
+        #     --from-literal=OPENAI_API_KEY="$OPENAI_API_KEY"
+        #
         # The chart's default gpt-4.1-mini is not enabled on this OpenAI
-        # project (403 "does not have access to model"); the same model
+        # project (403 "does not have access to model"); gpt-5.4-mini is what
         # the lab-5 memory agents ran on.
+        apiKey: ""
         model: gpt-5.4-mini
     # --- o11y lab: kagent inside the observability stack -------------------
     # Every agent run, LLM call and tool call becomes a span. The OTLP/gRPC
