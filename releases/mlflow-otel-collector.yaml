@@ -1,4 +1,5 @@
-# Bridges triage-core's and otel-demo's OTel traces into MLflow Tracing.
+# Bridges kagent's and otel-demo's OTel traces into MLflow Tracing (o11y lab;
+# the file was written for triage-core, which this fork cannot pull).
 # triage-core's own exporter only speaks OTLP/gRPC (releases/triage-core.yaml's
 # otelTracing comment: "grpc is the only protocol the exporter build
 # supports"), and MLflow's tracking server only accepts OTLP/HTTP at
@@ -77,15 +78,24 @@ spec:
         # why there's deliberately no catch-all bucket here.
         routing:
           table:
-            - statement: route() where resource.attributes["service.name"] == "triage-core"
-              pipelines: [traces/triage-core]
+            # o11y lab: kagent replaces triage-core as the agent source. The
+            # kagent controller and the agent pods export with their own
+            # service.name values, all starting with "kagent", and nothing
+            # enriches them with k8s attributes on the way here.
+            - statement: route() where IsMatch(resource.attributes["service.name"], "^kagent")
+              pipelines: [traces/kagent]
             - statement: route() where resource.attributes["k8s.namespace.name"] == "otel-demo"
               pipelines: [traces/otel-demo]
       exporters:
         # otlp_http, not otlphttp -- the chart's rewriteDeprecatedComponentNames
         # (on by default) silently renames the old identifier at render time;
         # writing the current one directly skips that rewrite and its warning.
-        otlp_http/mlflow-triage-core:
+        # Experiment ids of THIS cluster's MLflow (fresh SQLite store, ids
+        # assigned at creation): "otel-demo" -> 1, "kagent" -> 2, created
+        # with POST /api/2.0/mlflow/experiments/create after the first
+        # install. An id that does not exist makes MLflow answer 404 on
+        # /v1/traces and the exporter drops every span.
+        otlp_http/mlflow-kagent:
           endpoint: http://mlflow-mlflow.mlflow.svc.cluster.local:5000
           tls:
             insecure: true
@@ -96,7 +106,7 @@ spec:
           tls:
             insecure: true
           headers:
-            x-mlflow-experiment-id: "3"
+            x-mlflow-experiment-id: "1"
       # jaeger/zipkin removed outright, not just dropped from the traces
       # pipeline below -- the collector refuses to start with a receiver
       # defined but not referenced by any pipeline.
@@ -114,11 +124,11 @@ spec:
               # before checking which experiment they landed in.
               - debug
               - routing
-          traces/triage-core:
+          traces/kagent:
             receivers:
               - routing
             exporters:
-              - otlp_http/mlflow-triage-core
+              - otlp_http/mlflow-kagent
           traces/otel-demo:
             receivers:
               - routing

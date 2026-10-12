@@ -88,6 +88,35 @@ spec:
       default: openAI
       openAI:
         apiKey: OPENAI_API_KEY
+    # --- o11y lab: kagent inside the observability stack -------------------
+    # Every agent run, LLM call and tool call becomes a span. The OTLP/gRPC
+    # exporter points at the bridge collector in releases/mlflow-otel-
+    # collector.yaml, which routes by resource attributes into MLflow
+    # experiments (see the kagent route added there); Phoenix stays as the
+    # agentgateway-llm tracing target.
+    otel:
+      tracing:
+        enabled: true
+        exporter:
+          otlp:
+            endpoint: otel-collector.mlflow.svc.cluster.local:4317
+            protocol: grpc
+            insecure: true
+    # The built-in promql-agent and observability-agent reach Prometheus and
+    # Grafana through kagent-tools and grafana-mcp. Chart defaults point at
+    # prometheus.kagent / grafana.kagent, which do not exist here; the OTel
+    # demo's own Prometheus and Grafana (releases/opentelemetry-demo.yaml,
+    # fullnameOverride prometheus / grafana in namespace otel-demo) are the
+    # metrics backend for this lab.
+    kagent-tools:
+      tools:
+        prometheus:
+          url: "prometheus.otel-demo.svc.cluster.local:9090"
+        grafana:
+          url: "http://grafana.otel-demo.svc.cluster.local:80"
+    grafana-mcp:
+      grafana:
+        url: "http://grafana.otel-demo.svc.cluster.local:80/api"
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant

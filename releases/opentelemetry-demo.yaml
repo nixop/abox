@@ -86,12 +86,17 @@ spec:
     # 150m/256Mi. Traces additionally consolidate into mlflow
     # (releases/mlflow.yaml) via the bridge collector
     # (releases/mlflow-otel-collector.yaml), same as triage-core.
+    # o11y lab: Prometheus, Grafana and Jaeger are back on -- they are what
+    # the kagent agents query (metrics through kagent-tools/grafana-mcp,
+    # traces through Jaeger's HTTP API). OpenSearch stays off (1 CPU/100Mi
+    # for logs nobody queries here). Memory on the 16Gi Codespace is the
+    # budget: jaeger 600Mi, prometheus 768Mi, grafana 256Mi.
     jaeger:
-      enabled: false
+      enabled: true
     prometheus:
-      enabled: false
+      enabled: true
     grafana:
-      enabled: false
+      enabled: true
     opensearch:
       enabled: false
     opentelemetry-collector:
