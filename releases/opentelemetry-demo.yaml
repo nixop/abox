@@ -106,6 +106,10 @@ spec:
           # the lab looks at. HTTP traffic only.
           - name: LOCUST_BROWSER_TRAFFIC_ENABLED
             value: "false"
+          # This chart version drives the browser scenarios with k6, which
+          # has its own switch.
+          - name: K6_BROWSER_ENABLED
+            value: "false"
         service:
           port: 8089
     # Bundled jaeger/prometheus/grafana/opensearch backends disabled --
@@ -134,6 +138,13 @@ spec:
             memory: 512Mi
     grafana:
       enabled: true
+      grafana.ini:
+        # Grafana Live (the dashboard websocket) checks the Origin against
+        # root_url, which the chart renders as localhost:3000; behind
+        # frontend-proxy on :8080 every upgrade got 403 and the browser
+        # console filled with "can't establish a connection to ws://...".
+        live:
+          allowed_origins: "*"
     opensearch:
       enabled: false
     opentelemetry-collector:
