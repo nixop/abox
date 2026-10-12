@@ -120,7 +120,16 @@ spec:
           url: "http://grafana.otel-demo.svc.cluster.local:80"
     grafana-mcp:
       grafana:
-        url: "http://grafana.otel-demo.svc.cluster.local:80/api"
+        # Base URL, not /api: mcp-grafana appends the API paths itself. The
+        # demo's Grafana allows anonymous Admin, so no service account token.
+        url: "http://grafana.otel-demo.svc.cluster.local:80"
+      # The mcp/grafana:latest image the subchart pins validates the Host
+      # header (DNS-rebinding protection, default loopback only) and answers
+      # "forbidden: host not allowed" to the kagent controller, which calls it
+      # by its Service name. Allow the in-cluster names explicitly.
+      args:
+        - --allowed-hosts
+        - kagent-grafana-mcp.kagent:8000,kagent-grafana-mcp.kagent.svc:8000,kagent-grafana-mcp.kagent.svc.cluster.local:8000,localhost:8000
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
