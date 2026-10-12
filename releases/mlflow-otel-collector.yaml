@@ -107,6 +107,25 @@ spec:
             insecure: true
           headers:
             x-mlflow-experiment-id: "1"
+        # TASK-0007: the same kagent traces fanned out to the two other
+        # backends under comparison -- the demo's Jaeger (plain OTel) and
+        # Phoenix (OpenInference). Both take OTLP/gRPC natively.
+        otlp/jaeger:
+          endpoint: jaeger.otel-demo.svc.cluster.local:4317
+          tls:
+            insecure: true
+        otlp/phoenix:
+          endpoint: phoenix-svc.phoenix.svc.cluster.local:4317
+          tls:
+            insecure: true
+      processors:
+        # Phoenix files spans by project; without this attribute everything
+        # lands in "default".
+        resource/phoenix-project:
+          attributes:
+            - key: openinference.project.name
+              value: kagent
+              action: upsert
       # jaeger/zipkin removed outright, not just dropped from the traces
       # pipeline below -- the collector refuses to start with a receiver
       # defined but not referenced by any pipeline.
@@ -127,8 +146,12 @@ spec:
           traces/kagent:
             receivers:
               - routing
+            processors:
+              - resource/phoenix-project
             exporters:
               - otlp_http/mlflow-kagent
+              - otlp/jaeger
+              - otlp/phoenix
           traces/otel-demo:
             receivers:
               - routing
