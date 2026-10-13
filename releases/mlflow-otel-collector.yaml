@@ -72,6 +72,13 @@ spec:
         enabled: false
       zipkin:
         enabled: false
+    # LoadBalancer (cloud-provider-kind hands out 172.18.0.x) so a producer on
+    # the Codespace host, our apps/voice-agent, can export to it. A kubectl
+    # port-forward does not work here: the chart binds the receivers to the
+    # pod IP, and a port-forward dials localhost inside the pod ("lost
+    # connection to pod" on the first span).
+    service:
+      type: LoadBalancer
     extraEnvs:
       - name: PHOENIX_API_KEY
         valueFrom:

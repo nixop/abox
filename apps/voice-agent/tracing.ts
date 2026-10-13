@@ -9,11 +9,15 @@
 // Manual spans only: the http auto-instrumentation needs an ESM loader hook
 // that `node server.ts` does not have, and the fetch calls we care about are
 // the two in kagent.ts.
-import { context, propagation, trace, SpanKind, SpanStatusCode, type Span } from "@opentelemetry/api";
+import { context, propagation, trace, diag, DiagConsoleLogger, DiagLogLevel, SpanKind, SpanStatusCode, type Span } from "@opentelemetry/api";
 import { NodeTracerProvider, BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
+
+// Export failures are silent by default; a dead port-forward on 4317 looked
+// like "no spans" until this was on.
+diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN);
 
 const provider = new NodeTracerProvider({
   resource: resourceFromAttributes({ "service.name": process.env.OTEL_SERVICE_NAME ?? "voice-agent", "service.version": "0.2.0" }),
