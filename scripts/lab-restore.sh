@@ -112,5 +112,13 @@ log "== 9 port-forwards"
 (kubectl -n otel-demo port-forward svc/grafana 3000:80 > /dev/null 2>&1 &)
 (kubectl -n otel-demo port-forward svc/agent 8010:8010 > /dev/null 2>&1 &)
 sleep 4; sudo ss -ltnp | grep -oE ":(8080|8090|5000|6006|16686|3000|3101|3104|8010) " | sort -u | tr '\n' ' '; echo
+log "== 10 voice agent (apps/voice-agent, exports to the bridge collector's LoadBalancer IP)"
+CIP=$(kubectl -n mlflow get svc otel-collector -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+if [ -n "$CIP" ] && [ -d apps/voice-agent ]; then
+  ( cd apps/voice-agent && [ -d node_modules ] || npm install --silent
+    GOOGLE_API_KEY="$(sec GOOGLE_API_KEY)" PORT=8081 OTEL_EXPORTER_OTLP_ENDPOINT=http://$CIP:4317 setsid nohup node server.ts > /tmp/voice-agent.log 2>&1 < /dev/null & )
+  sleep 5; head -1 /tmp/voice-agent.log
+fi
+
 log "== done: $(kubectl get pods -A --no-headers | wc -l) pods, $(kubectl get pods -A --no-headers | grep -c Running) running"
 free -m | head -2

@@ -21,3 +21,7 @@ Browser microphone → this Node backend → Gemini Live → kagent A2A. Gemini 
 - Audio formats: input 16 kHz PCM16 mono (downsampled in an AudioWorklet), output 24 kHz PCM16 from Gemini, played with the Web Audio API; an `interrupted` message drops the queued audio.
 - agentgateway cannot proxy the stateful Gemini WebSocket, so the backend talks to Gemini directly; the key never reaches the browser.
 - The memory agents answer from whatever memory is loaded in the cluster at the time (scripted or agentic Relay memory).
+
+## Tracing (TASK-0007)
+
+`tracing.ts` exports OTLP/gRPC to `OTEL_EXPORTER_OTLP_ENDPOINT` (default `http://127.0.0.1:4317`): one `voice_session` span per browser connection, one `generate_content <model>` span per spoken turn (user and agent transcripts as `gen_ai.input/output.messages`), one `execute_tool <name>` span per tool call. The tool span's `traceparent` goes into the A2A request, so the kagent controller and the agent pod continue the same trace: a spoken question, the delegation and the kagent agent's LLM and tool spans share one trace id in Jaeger, MLflow and Phoenix. In the Codespace the endpoint is the bridge collector's LoadBalancer IP (`kubectl -n mlflow get svc otel-collector`); a `kubectl port-forward` does not work because the chart binds the receivers to the pod IP. Export failures are logged (`diag` at WARN).
