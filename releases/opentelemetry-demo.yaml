@@ -138,6 +138,16 @@ spec:
             memory: 512Mi
     grafana:
       enabled: true
+      # Chart default is 150m CPU / 256Mi: on this node every Grafana API
+      # call (dashboard search, datasources, settings) blocked for 60 s
+      # while Prometheus answered in 20 ms. Room to actually render.
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 768Mi
       grafana.ini:
         # Grafana Live (the dashboard websocket) checks the Origin against
         # root_url, which the chart renders as localhost:3000; behind
