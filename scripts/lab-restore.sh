@@ -53,7 +53,14 @@ kubectl -n mlflow get secret phoenix-otlp-key >/dev/null 2>&1 || kubectl -n mlfl
 
 log "== 4 apply bundle"
 kubectl apply -k releases/crds 2>&1 | grep -v "unchanged\|Warning"
-kubectl apply -k releases/ 2>&1 | grep -v "unchanged\|Warning"
+# The app bundle carries kagent CRs (Agent, MCPServer); kubectl rejects them
+# until the kagent-crds HelmRelease has installed the CRDs, so apply again
+# until nothing is left unmapped.
+for i in $(seq 1 40); do
+  OUT=$(kubectl apply -k releases/ 2>&1); echo "$OUT" | grep -v "unchanged\|Warning"
+  echo "$OUT" | grep -q "no matches for kind" || break
+  log "CRDs not ready yet, re-applying in 15s"; sleep 15
+done
 
 log "== 5 wait for helm releases (force-reconcile install timeouts)"
 for round in $(seq 1 40); do
