@@ -7,6 +7,12 @@ spec:
   type: Declarative
   description: Ingests and retrieves data across a vector store and a graph.
   declarative:
+    # TASK-0007: agent pods need the generic OTLP endpoint variable to export
+    # their LLM and tool spans (see releases/agent-memory.yaml).
+    deployment:
+      env:
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://otel-collector.mlflow.svc.cluster.local:4317
     # The ModelConfig the kagent chart creates, which every other agent here
     # uses. It was gemini-gemini-2-5-flash, but that object was never shipped
     # in releases/ -- it was created by hand and did not survive the cluster

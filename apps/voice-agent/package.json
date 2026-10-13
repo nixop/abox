@@ -1,0 +1,20 @@
+{
+  "name": "voice-agent",
+  "private": true,
+  "type": "module",
+  "description": "Voice front for kagent agents: browser mic -> Gemini Live (tools) -> kagent A2A",
+  "scripts": {
+    "start": "node server.ts",
+    "check": "node --check server.ts && node --check kagent.ts"
+  },
+  "engines": { "node": ">=22.6" },
+  "dependencies": {
+    "@google/genai": "^2.28.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/core": "^2.0.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.200.0",
+    "@opentelemetry/resources": "^2.0.0",
+    "@opentelemetry/sdk-trace-node": "^2.0.0",
+    "ws": "^8.18.0"
+  }
+}

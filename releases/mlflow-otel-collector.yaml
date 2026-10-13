@@ -83,7 +83,8 @@ spec:
         # No match_once/default_pipelines -- see the file header comment for
         # why there's deliberately no catch-all bucket here.
         routing:
-          # kagent is identified positively: the controller exports as
+          # kagent is identified positively (plus our own voice-agent, which
+          # runs outside the cluster and joins kagent traces): the controller exports as
           # kagent-controller, agent pods as the Agent name with underscores
           # (memory_eval_both, k8s_agent...). Everything else is the demo,
           # whose spans do not all carry k8s.namespace.name (the demo
@@ -93,7 +94,7 @@ spec:
           # is no third source here.)
           default_pipelines: [traces/otel-demo]
           table:
-            - statement: route() where IsMatch(resource.attributes["service.name"], "^(kagent.*|[a-z0-9]+(_[a-z0-9]+)+)$")
+            - statement: route() where IsMatch(resource.attributes["service.name"], "^(kagent.*|voice-agent|[a-z0-9]+(_[a-z0-9]+)+)$")
               pipelines: [traces/kagent]
       exporters:
         # otlp_http, not otlphttp -- the chart's rewriteDeprecatedComponentNames
